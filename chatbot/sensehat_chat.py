@@ -7,7 +7,14 @@ from dataclasses import dataclass
 from typing import Tuple
 
 import requests
-from sense_hat import SenseHat
+
+try:
+    from sense_hat import SenseHat
+except ModuleNotFoundError as exc:
+    SenseHat = None
+    SENSE_HAT_IMPORT_ERROR = exc
+else:
+    SENSE_HAT_IMPORT_ERROR = None
 
 
 SYSTEM_PROMPT = (
@@ -140,6 +147,16 @@ def print_banner(config: AppConfig) -> None:
 
 
 def run_chat() -> int:
+    if SenseHat is None:
+        print("Sense HAT support is not installed.", file=sys.stderr)
+        print(
+            "On Raspberry Pi OS, run: sudo apt update && sudo apt install sense-hat",
+            file=sys.stderr,
+        )
+        print("Then reboot and run this script again.", file=sys.stderr)
+        print(f"Import error: {SENSE_HAT_IMPORT_ERROR}", file=sys.stderr)
+        return 1
+
     config = parse_args()
     sense = SenseHat()
     sense.clear(*config.background_colour)

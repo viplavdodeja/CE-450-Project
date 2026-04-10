@@ -1,2 +1,1 @@
 requests>=2.31.0
-sense-hat>=2.6.0
