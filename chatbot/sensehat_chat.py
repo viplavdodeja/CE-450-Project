@@ -47,7 +47,7 @@ def parse_args() -> AppConfig:
     parser = argparse.ArgumentParser(
         description="Terminal chat interface for Ollama + Sense HAT"
     )
-    parser.add_argument("--model", default="qwen2.5:0.5b")
+    parser.add_argument("--model", default="chatmodel")
     parser.add_argument("--ollama-url", default="http://127.0.0.1:11434/api/generate")
     parser.add_argument("--speed", type=float, default=0.07)
     parser.add_argument("--text-colour", type=parse_rgb, default=(0, 255, 255))
