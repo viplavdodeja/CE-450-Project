@@ -4,17 +4,37 @@ import argparse
 import re
 import sys
 from dataclasses import dataclass
-from typing import Tuple
+from typing import List, Tuple
 
 import requests
 from sense_hat import SenseHat
 
 
 SYSTEM_PROMPT = (
-    "You are a Raspberry Pi assistant. "
-    "Answer with exactly one short sentence, no more than 8 words. "
-    "Be direct, helpful, and avoid lists."
+    "Reply with exactly one short, complete sentence. "
+    "Keep it under 8 words whenever possible. "
+    "Directly answer the user's prompt. "
+    "Be dry, sarcastic, and useful. "
+    "No greetings, no disclaimers, no follow-up questions, no lists."
 )
+
+BORING_PATTERNS = (
+    re.compile(r"^hello[!,. ]*(how can i assist you today\??)?$", re.IGNORECASE),
+    re.compile(r"^i'?m not hungry.*$", re.IGNORECASE),
+    re.compile(r"^eat well-balanced meals.*$", re.IGNORECASE),
+    re.compile(r"^i'?m not needed.*$", re.IGNORECASE),
+)
+
+SARCASTIC_FALLBACKS = {
+    "hello": "Hello, clearly this is urgent.",
+    "hi": "Hi, a monumental occasion.",
+    "hey": "Hey, thrilling start.",
+    "im hungry": "Eat something edible, obviously.",
+    "i'm hungry": "Eat something edible, obviously.",
+    "what should i eat?": "Tacos, unless disappointment sounds tastier.",
+    "what should i eat": "Tacos, unless disappointment sounds tastier.",
+    "no": "Convincing argument, truly airtight.",
+}
 
 EXIT_WORDS = {"exit", "quit"}
 
@@ -48,7 +68,7 @@ def parse_args() -> AppConfig:
         description="Terminal chat interface for Ollama + Sense HAT"
     )
     parser.add_argument("--model", default="chatmodel")
-    parser.add_argument("--ollama-url", default="http://127.0.0.1:11434/api/generate")
+    parser.add_argument("--ollama-url", default="http://127.0.0.1:11434/api/chat")
     parser.add_argument("--speed", type=float, default=0.07)
     parser.add_argument("--text-colour", type=parse_rgb, default=(0, 255, 255))
     parser.add_argument("--background-colour", type=parse_rgb, default=(0, 0, 0))
@@ -63,32 +83,42 @@ def parse_args() -> AppConfig:
     )
 
 
-def build_prompt(user_text: str) -> str:
-    return (
-        f"{SYSTEM_PROMPT}\n"
-        f"User question: {user_text.strip()}\n"
-        "Answer:"
-    )
-
-
-def request_llm_reply(config: AppConfig, user_text: str) -> str:
+def request_llm_reply(
+    config: AppConfig, history: List[dict[str, str]], user_text: str
+) -> str:
     payload = {
         "model": config.model,
-        "prompt": build_prompt(user_text),
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            *history,
+            {"role": "user", "content": user_text.strip()},
+        ],
         "stream": False,
         "options": {
-            "temperature": 0.3,
-            "num_predict": 24,
+            "temperature": 0.8,
+            "top_p": 0.9,
+            "repeat_penalty": 1.15,
+            "num_predict": 20,
         },
     }
 
     response = requests.post(config.ollama_url, json=payload, timeout=60)
     response.raise_for_status()
     body = response.json()
-    raw_reply = body.get("response", "").strip()
+    raw_reply = body.get("message", {}).get("content", "").strip()
     if not raw_reply:
         return "I have no reply."
     return raw_reply
+
+
+def fallback_reply(user_text: str) -> str:
+    lowered = re.sub(r"\s+", " ", user_text.strip().lower())
+    return SARCASTIC_FALLBACKS.get(lowered, "Sure, that sounds brilliantly thought out.")
+
+
+def is_boring_reply(reply: str) -> bool:
+    clean = reply.strip()
+    return any(pattern.match(clean) for pattern in BORING_PATTERNS)
 
 
 def normalize_reply(reply: str) -> str:
@@ -141,6 +171,7 @@ def print_banner(config: AppConfig) -> None:
 def run_chat() -> int:
     config = parse_args()
     sense = SenseHat()
+    history: List[dict[str, str]] = []
     sense.clear(*config.background_colour)
     print_banner(config)
 
@@ -161,11 +192,14 @@ def run_chat() -> int:
 
         if lowered == "clear":
             sense.clear(*config.background_colour)
+            history.clear()
             print("Assistant> Display cleared.")
             continue
 
         try:
-            raw_reply = request_llm_reply(config, user_text)
+            raw_reply = request_llm_reply(config, history, user_text)
+            if is_boring_reply(raw_reply):
+                raw_reply = fallback_reply(user_text)
             final_reply = normalize_reply(raw_reply)
         except requests.RequestException as exc:
             final_reply = "Ollama is unavailable."
@@ -179,6 +213,15 @@ def run_chat() -> int:
             print(f"Error: {exc}", file=sys.stderr)
             show_on_sensehat(sense, config, final_reply)
             continue
+
+        history.extend(
+            [
+                {"role": "user", "content": user_text},
+                {"role": "assistant", "content": final_reply},
+            ]
+        )
+        if len(history) > 8:
+            history = history[-8:]
 
         print(f"Assistant> {final_reply}")
         show_on_sensehat(sense, config, final_reply)

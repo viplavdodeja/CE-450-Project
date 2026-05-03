@@ -1,0 +1,73 @@
+Project Title:
+Raspberry Pi Voice Assistant with Hybrid Local/Cloud LLM
+
+Project Overview:
+
+This project aims to develop a voice-controlled assistant system using a Raspberry Pi, integrating embedded hardware components with on-device and cloud-based AI models. The system is designed to function as a conversational assistant, similar to ChatGPT, while operating primarily on edge hardware.
+
+The assistant will capture user speech through a USB microphone, convert it into text using a speech-to-text (STT) model, process the input using a local large language model (LLM) via Ollama, and generate spoken responses using a text-to-speech (TTS) engine (Piper). Audio output will be played through a USB speaker.
+
+The system incorporates a Sense HAT module for both input and feedback. The joystick will act as a push-to-talk trigger, allowing the user to control when audio is recorded. The LED matrix will visually represent system states such as idle, recording, processing, and speaking.
+
+A hybrid AI architecture will be implemented. By default, the system will use a local LLM running on the Raspberry Pi to ensure offline functionality and demonstrate edge AI capabilities. Additionally, a cloud-based fallback (OpenAI API) will be available for improved response quality. The user can switch between local and cloud modes by varying the duration of the joystick press (short press for local, long press for cloud).
+
+System Workflow:
+
+User presses and holds the Sense HAT joystick
+Audio is recorded while the button is pressed
+Upon release, press duration determines processing mode (local or cloud)
+Recorded audio is converted to text using STT
+Text is processed by the selected LLM (Ollama or OpenAI)
+The response is converted to speech using Piper
+Audio is played through the speaker
+LED matrix updates throughout to reflect system state
+
+Hardware Components:
+
+Raspberry Pi (ARM-based processor)
+USB Microphone (audio input)
+USB Speaker (audio output)
+Sense HAT (joystick input + LED matrix output)
+
+Software Components:
+
+Python (system control and integration)
+Vosk or Whisper.cpp (speech-to-text)
+Ollama (local LLM inference)
+OpenAI API (optional cloud-based LLM)
+Piper (text-to-speech engine)
+
+Embedded Systems Concepts:
+
+ARM-based processing (RISC architecture) for low-power edge computing
+GPIO and peripheral interfacing via Sense HAT
+Event-driven input handling (joystick-based control)
+State machine design for system behavior
+Real-time coordination of audio input, processing, and output
+
+System State Design:
+
+The system operates using a defined state machine, with each state represented on the LED matrix:
+
+Idle: waiting for user input
+Recording: capturing audio
+Processing: running STT and LLM
+Speaking: playing audio response
+Error: handling failures
+
+Project Goals:
+
+Build a fully functional voice assistant on embedded hardware
+Demonstrate edge AI using a local LLM on Raspberry Pi
+Implement a hybrid architecture combining local and cloud AI
+Ensure reliable real-time audio processing without data loss
+Design a clean and intuitive user interaction model using hardware controls
+Maintain concise, conversational responses (10–15 seconds max)
+Showcase integration of hardware, software, and AI in a unified system
+
+Future Improvements:
+
+Wake-word detection for hands-free interaction
+Conversation memory for contextual responses
+Streaming audio output to reduce latency
+Optimization of models for faster inference on ARM hardware

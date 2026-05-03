@@ -3,7 +3,7 @@
 This scaffold provides a Raspberry Pi terminal chat interface that:
 
 - reads your prompt from the terminal
-- sends it to a local `ollama` server running `qwen2.5:0.5b`
+- sends it to a local `ollama` server using your `chatmodel`
 - forces a very short reply
 - prints the reply in the terminal
 - scrolls the reply across the Sense HAT 8x8 LED matrix
@@ -20,7 +20,8 @@ This project assumes the Raspberry Pi has:
 - Python 3.10+
 - a working Sense HAT OS-level install
 - `ollama` installed and running locally
-- the model `qwen2.5:0.5b` available
+- the base model `qwen3.5:0.8b` available
+- your custom Ollama model `chatmodel` created from the Modelfile
 
 ## Install
 
@@ -45,7 +46,8 @@ pip install -r requirements.txt
 If needed:
 
 ```bash
-ollama pull qwen2.5:0.5b
+ollama pull qwen3.5:0.8b
+ollama create chatmodel -f ../chatmodel
 ```
 
 If `ollama serve` prints `bind: address already in use`, Ollama is already running on port `11434`, so you do not need to start it again.
@@ -59,7 +61,7 @@ python3 sensehat_chat.py
 Optional flags:
 
 ```bash
-python3 sensehat_chat.py --model qwen2.5:0.5b --speed 0.06 --text-colour 0,255,255
+python3 sensehat_chat.py --model chatmodel --speed 0.06 --text-colour 0,255,255
 ```
 
 ## Use
@@ -74,8 +76,11 @@ Type a prompt and press Enter.
 
 The script tries to keep replies sentence-like by:
 
-- instructing the model to answer in one short sentence
+- using Ollama chat messages instead of plain one-off prompts
+- keeping a short conversation history
+- instructing the model to answer in one short sarcastic sentence
 - trimming the final output to at most 8 words
+- replacing obviously bland stock replies with a sharper fallback
 - adding sentence punctuation when missing
 
 The Sense HAT display rotation is adjusted from the accelerometer before each message, so the text orientation tracks how the Pi is positioned.

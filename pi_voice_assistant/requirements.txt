@@ -1,0 +1,10 @@
+sense-hat
+sounddevice
+soundfile
+numpy
+requests
+openai
+python-dotenv
+tomli; python_version < "3.11"
+tomli-w
+pytest

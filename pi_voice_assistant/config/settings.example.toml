@@ -1,0 +1,28 @@
+[app]
+assistant_name = "Pi Assistant"
+default_mode = "local"
+max_response_seconds = 15
+recordings_dir = "data/audio"
+logs_dir = "logs"
+
+[hardware]
+joystick_hold_threshold_seconds = 2.0
+input_device_name = "USB Microphone"
+output_device_name = "USB Speaker"
+
+[stt]
+provider = "vosk"
+model_path = "/home/pi/models/vosk"
+
+[ollama]
+base_url = "http://localhost:11434"
+model = "llama3.2:3b"
+
+[openai]
+model = "gpt-4o-mini"
+api_key_env = "OPENAI_API_KEY"
+
+[tts]
+provider = "piper"
+voice_model_path = "/home/pi/models/piper/en_US-lessac-medium.onnx"
+output_wav_path = "data/audio/reply.wav"

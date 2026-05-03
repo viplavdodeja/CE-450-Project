@@ -1,0 +1,13 @@
+[Unit]
+Description=Raspberry Pi Voice Assistant
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/pi/pi_voice_assistant
+ExecStart=/home/pi/pi_voice_assistant/.venv/bin/python -m pi_voice_assistant.main
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
