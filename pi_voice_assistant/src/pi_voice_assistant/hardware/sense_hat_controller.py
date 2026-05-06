@@ -6,8 +6,11 @@ from pi_voice_assistant.core.state_machine import AssistantState
 
 try:
     from sense_hat import SenseHat
-except ModuleNotFoundError:  # pragma: no cover
+except Exception as exc:  # pragma: no cover
     SenseHat = None
+    _SENSE_HAT_IMPORT_ERROR = exc
+else:
+    _SENSE_HAT_IMPORT_ERROR = None
 
 
 @dataclass(frozen=True)
@@ -30,8 +33,10 @@ class SenseHatController:
     def __init__(self) -> None:
         if SenseHat is None:
             raise RuntimeError(
-                "sense_hat is not available. Install it on the Raspberry Pi first."
-            )
+                "sense_hat is not available. Install it on the Raspberry Pi first with "
+                "`sudo apt install -y sense-hat python3-sense-hat` and then reinstall "
+                "the venv requirements if needed."
+            ) from _SENSE_HAT_IMPORT_ERROR
 
         self._sense = SenseHat()
         self._sense.low_light = True

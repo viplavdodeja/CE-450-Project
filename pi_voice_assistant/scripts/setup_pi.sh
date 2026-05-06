@@ -2,7 +2,7 @@
 set -euo pipefail
 
 sudo apt update
-sudo apt install -y libportaudio2 portaudio19-dev
+sudo apt install -y libportaudio2 portaudio19-dev sense-hat python3-sense-hat
 
 python3 -m venv .venv
 source .venv/bin/activate

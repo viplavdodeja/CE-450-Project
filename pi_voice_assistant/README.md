@@ -39,7 +39,7 @@ First working version of a Raspberry Pi voice assistant with:
 bash scripts/setup_pi.sh
 ```
 
-This installs the required PortAudio system library used by `sounddevice`.
+This installs the required PortAudio and Sense HAT system packages.
 
 3. Create a real config file:
 
