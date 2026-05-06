@@ -5,6 +5,7 @@ max_response_seconds = 15
 captured_audio_dir = "data/audio"
 logs_dir = "logs"
 system_prompt = "You are a concise Raspberry Pi assistant. Keep replies brief and useful."
+error_hold_seconds = 3.0
 
 [hardware]
 joystick_hold_threshold_seconds = 2.0
@@ -13,6 +14,7 @@ output_device_name = "USB Speaker"
 sample_rate_hz = 16000
 channels = 1
 poll_interval_seconds = 0.05
+state_beeps_enabled = true
 
 [stt]
 provider = "vosk"

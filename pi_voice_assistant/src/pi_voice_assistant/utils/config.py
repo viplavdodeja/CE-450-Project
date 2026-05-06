@@ -18,6 +18,7 @@ class AppConfig:
     captured_audio_dir: Path
     logs_dir: Path
     system_prompt: str
+    error_hold_seconds: float
 
 
 @dataclass(frozen=True)
@@ -28,6 +29,7 @@ class HardwareConfig:
     sample_rate_hz: int
     channels: int
     poll_interval_seconds: float
+    state_beeps_enabled: bool
 
 
 @dataclass(frozen=True)
@@ -92,6 +94,7 @@ def load_settings(config_path: Path | None = None) -> Settings:
                 "system_prompt",
                 "You are a concise Raspberry Pi voice assistant. Keep answers brief and practical.",
             ),
+            error_hold_seconds=float(raw["app"].get("error_hold_seconds", 3.0)),
         ),
         hardware=HardwareConfig(
             joystick_hold_threshold_seconds=float(
@@ -104,6 +107,7 @@ def load_settings(config_path: Path | None = None) -> Settings:
             poll_interval_seconds=float(
                 raw["hardware"].get("poll_interval_seconds", 0.05)
             ),
+            state_beeps_enabled=bool(raw["hardware"].get("state_beeps_enabled", True)),
         ),
         stt=SttConfig(
             provider=raw["stt"].get("provider", "vosk"),

@@ -23,8 +23,12 @@ class AudioPlayer:
 
     def play_file(self, path: Path) -> None:
         data, sample_rate = sf.read(path, dtype="float32")
+        self.play_array(data, sample_rate)
+
+    def play_array(self, data: np.ndarray, sample_rate: int) -> None:
         device_index = self._find_output_device()
-        output_rate = self._resolve_output_sample_rate(device_index, sample_rate)
+        channels = 1 if data.ndim == 1 else int(data.shape[1])
+        output_rate = self._resolve_output_sample_rate(device_index, sample_rate, channels)
         if output_rate != sample_rate:
             data = self._resample_audio(data, sample_rate, output_rate)
             sample_rate = output_rate
@@ -52,7 +56,7 @@ class AudioPlayer:
         )
 
     def _resolve_output_sample_rate(
-        self, device_index: int | None, sample_rate_hz: int
+        self, device_index: int | None, sample_rate_hz: int, channels: int
     ) -> int:
         if device_index is None:
             return sample_rate_hz
@@ -62,7 +66,7 @@ class AudioPlayer:
             sd.check_output_settings(
                 device=device_index,
                 samplerate=sample_rate_hz,
-                channels=max(1, int(device_info["max_output_channels"])),
+                channels=min(channels, int(device_info["max_output_channels"])),
                 dtype="float32",
             )
             return sample_rate_hz

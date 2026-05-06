@@ -24,11 +24,13 @@ First working version of a Raspberry Pi voice assistant with:
 ## What works now
 
 - Sense HAT middle-button push-to-talk
-- LED color by assistant state
+- LED emoji/icon by assistant state
 - USB microphone capture to WAV
 - Vosk speech-to-text from saved audio
 - Local Ollama response generation
 - Optional Piper speech playback when enabled
+- USB-speaker beeps on state changes
+- Structured terminal status output
 
 ## Raspberry Pi setup
 
@@ -53,6 +55,7 @@ cp config/settings.example.toml config/settings.toml
 - `hardware.output_device_name`
 - `stt.model_path`
 - `tts.enabled` and `tts.voice_model_path` if you want spoken output
+- `hardware.state_beeps_enabled` if you want to mute transition beeps
 
 5. Make sure Ollama is running locally and that `qwen2.5:0.5b` is installed:
 
@@ -72,10 +75,11 @@ bash scripts/run_assistant.sh
 ```
 
 When it starts:
-- the LED should turn blue for idle
+- the LED should show the idle emoji
 - press and hold the Sense HAT middle joystick to speak
 - release to transcribe and send the prompt to Ollama
 - if Piper is disabled, the reply prints to the terminal
+- terminal status lines show state, transcript, LLM status, LLM output, and errors
 
 ## Notes
 
