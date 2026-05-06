@@ -5,8 +5,15 @@ from datetime import datetime
 from pathlib import Path
 
 import numpy as np
-import sounddevice as sd
 import soundfile as sf
+
+try:
+    import sounddevice as sd
+except OSError as exc:  # pragma: no cover
+    sd = None
+    _SOUNDDEVICE_IMPORT_ERROR = exc
+else:
+    _SOUNDDEVICE_IMPORT_ERROR = None
 
 
 @dataclass(frozen=True)
@@ -26,6 +33,7 @@ class AudioRecorder:
         channels: int,
         input_device_name: str,
     ) -> None:
+        _require_sounddevice()
         self.output_dir = output_dir
         self.sample_rate_hz = sample_rate_hz
         self.channels = channels
@@ -91,3 +99,11 @@ class AudioRecorder:
         raise RuntimeError(
             f"Could not find input device matching '{self.input_device_name}'."
         )
+
+
+def _require_sounddevice() -> None:
+    if sd is None:
+        raise RuntimeError(
+            "sounddevice could not load because PortAudio is missing. "
+            "Install it with: sudo apt install -y libportaudio2 portaudio19-dev"
+        ) from _SOUNDDEVICE_IMPORT_ERROR

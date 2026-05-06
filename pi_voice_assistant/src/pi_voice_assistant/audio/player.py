@@ -2,14 +2,22 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import sounddevice as sd
 import soundfile as sf
+
+try:
+    import sounddevice as sd
+except OSError as exc:  # pragma: no cover
+    sd = None
+    _SOUNDDEVICE_IMPORT_ERROR = exc
+else:
+    _SOUNDDEVICE_IMPORT_ERROR = None
 
 
 class AudioPlayer:
     """Plays generated speech through the configured speaker."""
 
     def __init__(self, output_device_name: str) -> None:
+        _require_sounddevice()
         self.output_device_name = output_device_name
 
     def play_file(self, path: Path) -> None:
@@ -31,3 +39,11 @@ class AudioPlayer:
         raise RuntimeError(
             f"Could not find output device matching '{self.output_device_name}'."
         )
+
+
+def _require_sounddevice() -> None:
+    if sd is None:
+        raise RuntimeError(
+            "sounddevice could not load because PortAudio is missing. "
+            "Install it with: sudo apt install -y libportaudio2 portaudio19-dev"
+        ) from _SOUNDDEVICE_IMPORT_ERROR

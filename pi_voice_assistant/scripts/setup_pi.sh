@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+sudo apt update
+sudo apt install -y libportaudio2 portaudio19-dev
+
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
