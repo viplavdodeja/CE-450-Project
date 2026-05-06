@@ -1,4 +1,3 @@
-sense-hat
 sounddevice
 soundfile
 numpy

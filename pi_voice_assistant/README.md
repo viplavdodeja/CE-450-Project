@@ -40,6 +40,7 @@ bash scripts/setup_pi.sh
 ```
 
 This installs the required PortAudio and Sense HAT system packages.
+The virtual environment is created with access to Raspberry Pi OS system Python packages so `sense_hat` works correctly.
 
 3. Create a real config file:
 
