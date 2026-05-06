@@ -2,7 +2,7 @@
 assistant_name = "Pi Assistant"
 default_mode = "local"
 max_response_seconds = 15
-recordings_dir = "data/audio"
+captured_audio_dir = "data/audio"
 logs_dir = "logs"
 
 [hardware]

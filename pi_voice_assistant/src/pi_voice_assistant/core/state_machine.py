@@ -3,7 +3,7 @@ from enum import Enum
 
 class AssistantState(str, Enum):
     IDLE = "idle"
-    RECORDING = "recording"
+    LISTENING = "listening"
     PROCESSING = "processing"
     SPEAKING = "speaking"
     ERROR = "error"

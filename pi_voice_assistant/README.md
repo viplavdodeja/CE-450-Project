@@ -18,7 +18,7 @@ Project scaffold for a Raspberry Pi voice assistant with:
 - `systemd/`: service unit for auto-start
 - `tests/`: test placeholders
 - `logs/`: runtime logs
-- `data/`: recordings and generated audio
+- `data/`: captured audio and generated audio
 - `docs/`: notes and hardware setup
 
 ## Next steps
