@@ -24,6 +24,11 @@ class LocalOllamaClient:
             "model": self.config.model,
             "prompt": self._build_prompt(prompt),
             "stream": False,
+            "keep_alive": self.config.keep_alive,
+            "options": {
+                "num_predict": self.config.max_tokens,
+                "temperature": self.config.temperature,
+            },
         }
         response = requests.post(
             f"{self.config.base_url}/api/generate",

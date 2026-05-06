@@ -41,6 +41,9 @@ class OllamaConfig:
     base_url: str
     model: str
     timeout_seconds: int
+    keep_alive: str
+    max_tokens: int
+    temperature: float
 
 
 @dataclass(frozen=True)
@@ -110,6 +113,9 @@ def load_settings(config_path: Path | None = None) -> Settings:
             base_url=raw["ollama"].get("base_url", "http://localhost:11434"),
             model=raw["ollama"]["model"],
             timeout_seconds=int(raw["ollama"].get("timeout_seconds", 60)),
+            keep_alive=raw["ollama"].get("keep_alive", "10m"),
+            max_tokens=int(raw["ollama"].get("max_tokens", 48)),
+            temperature=float(raw["ollama"].get("temperature", 0.2)),
         ),
         tts=TtsConfig(
             provider=raw["tts"].get("provider", "piper"),

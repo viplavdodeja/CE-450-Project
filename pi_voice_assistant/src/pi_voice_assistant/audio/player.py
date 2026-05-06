@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import soundfile as sf
 
 try:
@@ -22,7 +23,13 @@ class AudioPlayer:
 
     def play_file(self, path: Path) -> None:
         data, sample_rate = sf.read(path, dtype="float32")
-        sd.play(data, sample_rate, device=self._find_output_device())
+        device_index = self._find_output_device()
+        output_rate = self._resolve_output_sample_rate(device_index, sample_rate)
+        if output_rate != sample_rate:
+            data = self._resample_audio(data, sample_rate, output_rate)
+            sample_rate = output_rate
+
+        sd.play(data, sample_rate, device=device_index)
         sd.wait()
 
     def _find_output_device(self) -> int | None:
@@ -43,6 +50,57 @@ class AudioPlayer:
             f"'{self.output_device_name}'. Available output devices: "
             + (", ".join(available_outputs) if available_outputs else "[none]")
         )
+
+    def _resolve_output_sample_rate(
+        self, device_index: int | None, sample_rate_hz: int
+    ) -> int:
+        if device_index is None:
+            return sample_rate_hz
+
+        device_info = sd.query_devices(device_index)
+        try:
+            sd.check_output_settings(
+                device=device_index,
+                samplerate=sample_rate_hz,
+                channels=max(1, int(device_info["max_output_channels"])),
+                dtype="float32",
+            )
+            return sample_rate_hz
+        except Exception:
+            default_rate = int(device_info["default_samplerate"])
+            print(
+                "Playback sample rate "
+                f"{sample_rate_hz} Hz is not supported by '{device_info['name']}'. "
+                f"Falling back to device default {default_rate} Hz."
+            )
+            return default_rate
+
+    def _resample_audio(
+        self, data: np.ndarray, input_rate_hz: int, output_rate_hz: int
+    ) -> np.ndarray:
+        if input_rate_hz == output_rate_hz:
+            return data
+
+        if data.ndim == 1:
+            data = data[:, np.newaxis]
+
+        duration_seconds = data.shape[0] / input_rate_hz
+        input_positions = np.linspace(0.0, duration_seconds, num=data.shape[0], endpoint=False)
+        output_length = max(1, int(round(duration_seconds * output_rate_hz)))
+        output_positions = np.linspace(
+            0.0,
+            duration_seconds,
+            num=output_length,
+            endpoint=False,
+        )
+        resampled_channels = [
+            np.interp(output_positions, input_positions, data[:, channel_index])
+            for channel_index in range(data.shape[1])
+        ]
+        resampled = np.stack(resampled_channels, axis=1).astype("float32")
+        if resampled.shape[1] == 1:
+            return resampled[:, 0]
+        return resampled
 
 
 def _require_sounddevice() -> None:

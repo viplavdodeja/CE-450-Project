@@ -76,19 +76,28 @@ class AssistantController:
         del press_duration
         self._set_state(AssistantState.PROCESSING)
 
+        stt_started_at = time.perf_counter()
         transcript = self.transcriber.transcribe_file(capture.path)
+        stt_elapsed = time.perf_counter() - stt_started_at
         print(f"Transcript: {transcript or '[empty]'}")
+        print(f"STT latency: {stt_elapsed:.2f}s")
         if not transcript:
             self._set_state(AssistantState.IDLE)
             return
 
+        llm_started_at = time.perf_counter()
         reply = self.llm.generate_reply(transcript)
+        llm_elapsed = time.perf_counter() - llm_started_at
         print(f"Assistant: {reply}")
+        print(f"LLM latency: {llm_elapsed:.2f}s")
 
         if self.tts.is_available():
             self._set_state(AssistantState.SPEAKING)
+            tts_started_at = time.perf_counter()
             speech_path = self.tts.synthesize_to_file(reply)
             self.player.play_file(speech_path)
+            tts_elapsed = time.perf_counter() - tts_started_at
+            print(f"TTS + playback latency: {tts_elapsed:.2f}s")
         else:
             print("Piper not configured; skipping spoken playback.")
 

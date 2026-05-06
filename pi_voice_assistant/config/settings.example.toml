@@ -22,6 +22,9 @@ model_path = "/home/pi/models/vosk"
 base_url = "http://localhost:11434"
 model = "qwen2.5:0.5b"
 timeout_seconds = 60
+keep_alive = "10m"
+max_tokens = 48
+temperature = 0.2
 
 [tts]
 provider = "piper"

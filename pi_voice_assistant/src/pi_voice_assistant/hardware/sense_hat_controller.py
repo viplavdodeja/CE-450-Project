@@ -23,11 +23,11 @@ class SenseHatController:
     """Handles joystick input and LED matrix state display."""
 
     _STATE_COLORS = {
-        AssistantState.IDLE: (0, 0, 40),
-        AssistantState.LISTENING: (0, 80, 0),
-        AssistantState.PROCESSING: (80, 80, 0),
-        AssistantState.SPEAKING: (80, 0, 80),
-        AssistantState.ERROR: (80, 0, 0),
+        AssistantState.IDLE: (0, 0, 255),
+        AssistantState.LISTENING: (0, 255, 0),
+        AssistantState.PROCESSING: (255, 255, 0),
+        AssistantState.SPEAKING: (255, 0, 255),
+        AssistantState.ERROR: (255, 0, 0),
     }
 
     def __init__(self) -> None:
