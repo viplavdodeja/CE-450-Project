@@ -3,8 +3,7 @@ sounddevice
 soundfile
 numpy
 requests
-openai
-python-dotenv
+vosk
 tomli; python_version < "3.11"
 tomli-w
 pytest

@@ -4,11 +4,15 @@ default_mode = "local"
 max_response_seconds = 15
 captured_audio_dir = "data/audio"
 logs_dir = "logs"
+system_prompt = "You are a concise Raspberry Pi assistant. Keep replies brief and useful."
 
 [hardware]
 joystick_hold_threshold_seconds = 2.0
 input_device_name = "USB Microphone"
 output_device_name = "USB Speaker"
+sample_rate_hz = 16000
+channels = 1
+poll_interval_seconds = 0.05
 
 [stt]
 provider = "vosk"
@@ -16,13 +20,11 @@ model_path = "/home/pi/models/vosk"
 
 [ollama]
 base_url = "http://localhost:11434"
-model = "llama3.2:3b"
-
-[openai]
-model = "gpt-4o-mini"
-api_key_env = "OPENAI_API_KEY"
+model = "qwen2.5:0.5b"
+timeout_seconds = 60
 
 [tts]
 provider = "piper"
+enabled = false
 voice_model_path = "/home/pi/models/piper/en_US-lessac-medium.onnx"
 output_wav_path = "data/audio/reply.wav"
