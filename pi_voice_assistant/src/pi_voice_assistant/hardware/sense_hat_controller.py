@@ -39,7 +39,7 @@ class SenseHatController:
             ) from _SENSE_HAT_IMPORT_ERROR
 
         self._sense = SenseHat()
-        self._sense.low_light = True
+        self._sense.low_light = False
 
     def get_events(self) -> list[JoystickEvent]:
         return [

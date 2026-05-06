@@ -46,14 +46,17 @@ class AudioRecorder:
             raise RuntimeError("Audio capture is already active.")
 
         self._frames = []
+        device_index = self._find_input_device()
+        sample_rate_hz = self._resolve_sample_rate(device_index)
         self._stream = sd.InputStream(
-            samplerate=self.sample_rate_hz,
+            samplerate=sample_rate_hz,
             channels=self.channels,
             dtype="float32",
-            device=self._find_input_device(),
+            device=device_index,
             callback=self._capture_callback,
         )
         self._stream.start()
+        self.sample_rate_hz = sample_rate_hz
 
     def stop(self) -> RecordedAudio:
         if self._stream is None:
@@ -90,15 +93,41 @@ class AudioRecorder:
             return None
 
         name_lower = self.input_device_name.lower()
+        available_inputs: list[str] = []
         for index, device in enumerate(sd.query_devices()):
             if device["max_input_channels"] < 1:
                 continue
+            available_inputs.append(f"{index}: {device['name']}")
             if name_lower in device["name"].lower():
                 return index
 
         raise RuntimeError(
-            f"Could not find input device matching '{self.input_device_name}'."
+            "Could not find input device matching "
+            f"'{self.input_device_name}'. Available input devices: "
+            + (", ".join(available_inputs) if available_inputs else "[none]")
         )
+
+    def _resolve_sample_rate(self, device_index: int | None) -> int:
+        if device_index is None:
+            return self.sample_rate_hz
+
+        device_info = sd.query_devices(device_index)
+        try:
+            sd.check_input_settings(
+                device=device_index,
+                samplerate=self.sample_rate_hz,
+                channels=self.channels,
+                dtype="float32",
+            )
+            return self.sample_rate_hz
+        except Exception:
+            default_rate = int(device_info["default_samplerate"])
+            print(
+                "Configured sample rate "
+                f"{self.sample_rate_hz} Hz is not supported by '{device_info['name']}'. "
+                f"Falling back to device default {default_rate} Hz."
+            )
+            return default_rate
 
 
 def _require_sounddevice() -> None:

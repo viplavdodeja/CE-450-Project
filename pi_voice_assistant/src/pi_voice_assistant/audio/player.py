@@ -30,14 +30,18 @@ class AudioPlayer:
             return None
 
         name_lower = self.output_device_name.lower()
+        available_outputs: list[str] = []
         for index, device in enumerate(sd.query_devices()):
             if device["max_output_channels"] < 1:
                 continue
+            available_outputs.append(f"{index}: {device['name']}")
             if name_lower in device["name"].lower():
                 return index
 
         raise RuntimeError(
-            f"Could not find output device matching '{self.output_device_name}'."
+            "Could not find output device matching "
+            f"'{self.output_device_name}'. Available output devices: "
+            + (", ".join(available_outputs) if available_outputs else "[none]")
         )
 
 
