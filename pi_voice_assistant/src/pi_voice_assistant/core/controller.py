@@ -105,18 +105,30 @@ class AssistantController:
             speech_path = self.tts.synthesize_to_file(reply)
             tts_elapsed = time.perf_counter() - tts_started_at
             self.reporter.tts_status(f"synthesized in {tts_elapsed:.2f}s")
-            self._set_state(AssistantState.SPEAKING, detail="Playing response")
+            playback_started_at = time.perf_counter()
+            self._set_state(
+                AssistantState.SPEAKING,
+                detail="Playing response",
+                emit_beep=False,
+            )
             self.player.play_file(speech_path)
+            playback_elapsed = time.perf_counter() - playback_started_at
+            self.reporter.tts_status(f"playback finished in {playback_elapsed:.2f}s")
         else:
             self.reporter.tts_status("disabled; terminal output only")
 
         self._set_state(AssistantState.IDLE, detail="Ready")
 
-    def _set_state(self, state: AssistantState, detail: str | None = None) -> None:
+    def _set_state(
+        self,
+        state: AssistantState,
+        detail: str | None = None,
+        emit_beep: bool = True,
+    ) -> None:
         self.state_machine.transition_to(state)
         self.hardware.set_state(state)
         self.reporter.state(state, detail=detail)
-        if self.settings.hardware.state_beeps_enabled:
+        if emit_beep and self.settings.hardware.state_beeps_enabled:
             self.beeper.play_for_state(state)
 
     def _handle_error(self, exc: Exception) -> None:

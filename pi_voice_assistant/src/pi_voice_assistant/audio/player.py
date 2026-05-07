@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from pathlib import Path
 
 import numpy as np
@@ -20,21 +21,23 @@ class AudioPlayer:
     def __init__(self, output_device_name: str) -> None:
         _require_sounddevice()
         self.output_device_name = output_device_name
+        self._play_lock = threading.Lock()
 
     def play_file(self, path: Path) -> None:
         data, sample_rate = sf.read(path, dtype="float32")
         self.play_array(data, sample_rate)
 
     def play_array(self, data: np.ndarray, sample_rate: int) -> None:
-        device_index = self._find_output_device()
-        channels = 1 if data.ndim == 1 else int(data.shape[1])
-        output_rate = self._resolve_output_sample_rate(device_index, sample_rate, channels)
-        if output_rate != sample_rate:
-            data = self._resample_audio(data, sample_rate, output_rate)
-            sample_rate = output_rate
+        with self._play_lock:
+            device_index = self._find_output_device()
+            channels = 1 if data.ndim == 1 else int(data.shape[1])
+            output_rate = self._resolve_output_sample_rate(device_index, sample_rate, channels)
+            if output_rate != sample_rate:
+                data = self._resample_audio(data, sample_rate, output_rate)
+                sample_rate = output_rate
 
-        sd.play(data, sample_rate, device=device_index)
-        sd.wait()
+            sd.play(data, sample_rate, device=device_index)
+            sd.wait()
 
     def _find_output_device(self) -> int | None:
         if not self.output_device_name:
