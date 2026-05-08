@@ -13,6 +13,12 @@ from pi_voice_assistant.utils.config import TtsConfig
 class PiperEngine:
     """Generates spoken responses using Piper."""
 
+    _IGNORED_STDERR_PATTERNS = (
+        "device_discovery.cc:283 GetGpuDevices",
+        'Failed to detect devices under "/sys/class/drm/card',
+        'ReadFileContents Failed to open file: "/sys/class/drm/card',
+    )
+
     def __init__(self, config: TtsConfig) -> None:
         self.config = config
 
@@ -35,12 +41,13 @@ class PiperEngine:
             "--output_file",
             str(self.config.output_wav_path),
         ]
-        subprocess.run(
+        completed = subprocess.run(
             command,
             input=normalized_text,
             text=True,
-            check=True,
+            capture_output=True,
         )
+        self._raise_on_failure(completed, command)
         self._prepend_leading_silence()
         return self.config.output_wav_path
 
@@ -75,3 +82,28 @@ class PiperEngine:
             )
         padded_audio = np.concatenate([silence, audio], axis=0)
         sf.write(self.config.output_wav_path, padded_audio, sample_rate_hz)
+
+    def _raise_on_failure(
+        self,
+        completed: subprocess.CompletedProcess[str],
+        command: list[str],
+    ) -> None:
+        if completed.returncode == 0:
+            return
+
+        stderr = self._filter_stderr(completed.stderr or "")
+        message = stderr or f"Piper failed with exit code {completed.returncode}."
+        raise subprocess.CalledProcessError(
+            completed.returncode,
+            command,
+            output=completed.stdout,
+            stderr=message,
+        )
+
+    def _filter_stderr(self, stderr: str) -> str:
+        lines = []
+        for line in stderr.splitlines():
+            if any(pattern in line for pattern in self._IGNORED_STDERR_PATTERNS):
+                continue
+            lines.append(line)
+        return "\n".join(lines).strip()
