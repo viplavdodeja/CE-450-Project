@@ -38,3 +38,4 @@ provider = "piper"
 enabled = false
 voice_model_path = "/home/pi/models/piper/en_US-lessac-medium.onnx"
 output_wav_path = "data/audio/reply.wav"
+leading_silence_seconds = 0.0

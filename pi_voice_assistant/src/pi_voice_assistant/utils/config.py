@@ -55,6 +55,7 @@ class TtsConfig:
     enabled: bool
     voice_model_path: Path
     output_wav_path: Path
+    leading_silence_seconds: float
 
 
 @dataclass(frozen=True)
@@ -140,6 +141,9 @@ def load_settings(config_path: Path | None = None) -> Settings:
             enabled=bool(raw["tts"].get("enabled", False)),
             voice_model_path=_resolve_path(root, raw["tts"]["voice_model_path"]),
             output_wav_path=_resolve_path(root, raw["tts"]["output_wav_path"]),
+            leading_silence_seconds=float(
+                raw["tts"].get("leading_silence_seconds", 0.0)
+            ),
         ),
         config_path=path,
     )
