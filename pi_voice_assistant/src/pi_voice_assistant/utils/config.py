@@ -31,6 +31,7 @@ class HardwareConfig:
     channels: int
     poll_interval_seconds: float
     state_beeps_enabled: bool
+    display_rotation: int
 
 
 @dataclass(frozen=True)
@@ -118,6 +119,7 @@ def load_settings(config_path: Path | None = None) -> Settings:
                 raw["hardware"].get("poll_interval_seconds", 0.05)
             ),
             state_beeps_enabled=bool(raw["hardware"].get("state_beeps_enabled", True)),
+            display_rotation=int(raw["hardware"].get("display_rotation", 180)),
         ),
         stt=SttConfig(
             provider=raw["stt"].get("provider", "vosk"),

@@ -15,6 +15,7 @@ sample_rate_hz = 16000
 channels = 1
 poll_interval_seconds = 0.05
 state_beeps_enabled = true
+display_rotation = 180
 
 [stt]
 provider = "vosk"

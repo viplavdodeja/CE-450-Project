@@ -141,7 +141,7 @@ class SenseHatController:
         ),
     ]
 
-    def __init__(self) -> None:
+    def __init__(self, rotation: int = 180) -> None:
         if SenseHat is None:
             raise RuntimeError(
                 "sense_hat is not available. Install it on the Raspberry Pi first with "
@@ -151,6 +151,7 @@ class SenseHatController:
 
         self._sense = SenseHat()
         self._sense.low_light = False
+        self._sense.set_rotation(rotation % 360)
         self._animation_stop = threading.Event()
         self._animation_thread: threading.Thread | None = None
 

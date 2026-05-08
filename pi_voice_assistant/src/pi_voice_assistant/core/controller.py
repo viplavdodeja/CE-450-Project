@@ -32,7 +32,9 @@ class AssistantController:
         self.settings = settings
         self.state_machine = AssistantStateMachine()
         self.reporter = ConsoleReporter(self.state_machine)
-        self.hardware = SenseHatController()
+        self.hardware = SenseHatController(
+            rotation=settings.hardware.display_rotation
+        )
         self.player = AudioPlayer(settings.hardware.output_device_name)
         self.beeper = StateBeeper(self.player)
         self.recorder = AudioRecorder(
