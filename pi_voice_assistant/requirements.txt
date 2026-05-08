@@ -3,6 +3,7 @@ soundfile
 numpy
 requests
 vosk
+openai
 tomli; python_version < "3.11"
 tomli-w
 pytest

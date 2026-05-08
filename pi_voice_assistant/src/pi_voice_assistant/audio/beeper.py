@@ -26,7 +26,9 @@ class StateBeeper:
         tones = self._STATE_TONES.get(state)
         if not tones:
             return
+        self.play_tones(tones)
 
+    def play_tones(self, tones: list[tuple[float, float]]) -> None:
         thread = threading.Thread(
             target=self._play_tones,
             args=(tones,),

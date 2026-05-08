@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+from typing import Protocol
 
 from pi_voice_assistant.audio.beeper import StateBeeper
 from pi_voice_assistant.audio.player import AudioPlayer
@@ -15,10 +16,19 @@ from pi_voice_assistant.utils.console import ConsoleReporter
 from pi_voice_assistant.utils.config import Settings
 
 
+class LlmClient(Protocol):
+    def healthcheck(self) -> None: ...
+    def generate_reply(self, prompt: str) -> str: ...
+
+
 class AssistantController:
     """Coordinates audio capture, inference, and playback."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        llm_client: LlmClient | None = None,
+    ) -> None:
         self.settings = settings
         self.state_machine = AssistantStateMachine()
         self.reporter = ConsoleReporter(self.state_machine)
@@ -32,7 +42,7 @@ class AssistantController:
             input_device_name=settings.hardware.input_device_name,
         )
         self.transcriber = SpeechTranscriber(settings.stt.model_path)
-        self.llm = LocalOllamaClient(
+        self.llm = llm_client or LocalOllamaClient(
             config=settings.ollama,
             system_prompt=settings.app.system_prompt,
         )
@@ -77,6 +87,8 @@ class AssistantController:
             self.reporter.audio(
                 f"captured {capture.duration_seconds:.2f}s at {capture.sample_rate_hz} Hz"
             )
+            if self.settings.hardware.state_beeps_enabled:
+                self.beeper.play_tones([(1046.0, 0.05), (1318.0, 0.05)])
             self._process_capture(capture, press_duration)
 
     def _process_capture(self, capture: RecordedAudio, press_duration: float) -> None:

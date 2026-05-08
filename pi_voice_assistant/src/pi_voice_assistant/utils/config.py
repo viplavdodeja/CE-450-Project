@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 from pathlib import Path
 from typing import Any
 
@@ -57,11 +58,19 @@ class TtsConfig:
 
 
 @dataclass(frozen=True)
+class OpenAIConfig:
+    model: str
+    api_key_env: str
+    timeout_seconds: int
+
+
+@dataclass(frozen=True)
 class Settings:
     app: AppConfig
     hardware: HardwareConfig
     stt: SttConfig
     ollama: OllamaConfig
+    openai: OpenAIConfig
     tts: TtsConfig
     config_path: Path
 
@@ -121,6 +130,11 @@ def load_settings(config_path: Path | None = None) -> Settings:
             max_tokens=int(raw["ollama"].get("max_tokens", 48)),
             temperature=float(raw["ollama"].get("temperature", 0.2)),
         ),
+        openai=OpenAIConfig(
+            model=raw.get("openai", {}).get("model", "gpt-4o-mini"),
+            api_key_env=raw.get("openai", {}).get("api_key_env", "OPENAI_API_KEY"),
+            timeout_seconds=int(raw.get("openai", {}).get("timeout_seconds", 60)),
+        ),
         tts=TtsConfig(
             provider=raw["tts"].get("provider", "piper"),
             enabled=bool(raw["tts"].get("enabled", False)),
@@ -137,6 +151,15 @@ def ensure_runtime_dirs(settings: Settings) -> None:
     settings.app.captured_audio_dir.mkdir(parents=True, exist_ok=True)
     settings.app.logs_dir.mkdir(parents=True, exist_ok=True)
     settings.tts.output_wav_path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def getenv_required(name: str) -> str:
+    value = os.getenv(name, "").strip()
+    if not value:
+        raise RuntimeError(
+            f"Required environment variable '{name}' is not set."
+        )
+    return value
 
 
 def _read_toml(path: Path) -> dict[str, Any]:

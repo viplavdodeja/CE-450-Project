@@ -28,6 +28,11 @@ keep_alive = "10m"
 max_tokens = 48
 temperature = 0.2
 
+[openai]
+model = "gpt-4o-mini"
+api_key_env = "OPENAI_API_KEY"
+timeout_seconds = 60
+
 [tts]
 provider = "piper"
 enabled = false

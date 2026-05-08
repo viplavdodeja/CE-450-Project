@@ -81,6 +81,31 @@ When it starts:
 - if Piper is disabled, the reply prints to the terminal
 - terminal status lines show state, transcript, LLM status, LLM output, and errors
 
+## Cloud Mode
+
+This repo also includes a cloud entrypoint that keeps the same hardware, STT, TTS, LED, beep, and terminal logic, but uses the OpenAI API instead of local Ollama.
+
+1. Install the extra dependency:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+2. Set an API key in your shell:
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+```
+
+3. Optionally edit the `[openai]` section in `config/settings.toml`.
+
+4. Run the cloud assistant:
+
+```bash
+bash scripts/run_cloud_assistant.sh
+```
+
 ## Notes
 
 - This version is local-only. Cloud mode is not wired in.
